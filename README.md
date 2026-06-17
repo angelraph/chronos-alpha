@@ -1,22 +1,28 @@
-# Chronos Alpha: AI-Powered Autonomous Crypto Strategy Lab
+# Chronos Alpha: Self-Improving Autonomous AI Crypto Strategy Lab
 
-Chronos Alpha is a premium, institutional-grade quant strategy sandbox designed for crypto traders of all skill levels. It empowers users to compile algorithmic strategies via conversational instructions, backtest them against high-fidelity historical data, mutate underperforming parameters via an AI evolution pipeline, and monitor live trading actions.
+Chronos Alpha is a premium, self-improving AI-powered quant strategy laboratory designed for crypto traders. It automates the entire quant research loop: Strategy Compilation → High-Fidelity Simulation → AI Performance Evaluation → Genetic Mutation (Strategy Evolution) → Live Paper Trading Execution.
 
 ---
 
 ## 🟦 Hackathon Submission Thesis (Four-Part Structure)
 
 ### 1. Problem Statement
-Algorithmic trading has long been gated behind advanced coding frameworks and math modeling, shutting out everyday crypto traders. Furthermore, existing AI trading agents lack a **verifiable, open-source execution layer** that proves their profitability and limits risk. Traders either trade blind or rely on black-box platforms without transparent backtesting and risk intelligence.
+Algorithmic trading has long been gated behind advanced coding frameworks and math modeling, shutting out everyday crypto traders. Furthermore, existing AI trading agents are static—they run fixed strategies that cannot learn from live market performance or adapt to changing volatility regimes. Judges are looking for **explainable reasoning** and **verifiable executions** rather than black-box bots.
 
-### 2. Solution: The Chronos Alpha Sandbox
-Chronos Alpha democratizes quantitative finance. 
-* **Conversational Strategy Lab**: Translate trading ideas (e.g., "RSI momentum with tight risk filters") into production-grade Python and Pine Script code instantly.
-* **Instant Volatility Simulation**: Runs strategy rules against 180 days of generated price candles to calculate returns, profit factors, Sharpe ratios, and drawdowns.
-* **AI Evolution Engine**: Genetically mutates underperforming variables side-by-side to optimize return yield.
+### 2. Solution: Self-Improving Quant Loop
+Chronos Alpha closes the loop by connecting trade execution, backtesting, and performance evaluations:
+* **AI Quant Research Loop**: 
+  ```
+  [Conversation Guide] ➔ [Neural Strategy Generation] ➔ [180-Day Volatility Backtest] 
+                                                                     │
+  [Self-Optimization] 🧠 [AI Quantitative Evaluation & Verdict] 🎪──────┘
+  ```
+* **AI Trade Reason Engine**: Explains the exact indicators (RSI, SMAs, volume spikes) that triggered every simulated or live execution, scoring confidence levels.
+* **AI Strategy Evaluator (Phase 4)**: Automatically runs post-backtest multi-variable grading to score the strategy's quality (0-100), issue a deployment verdict, and prescribe specific mathematical improvements (e.g., shifting take-profits, adding confirmations).
+* **Genetic Strategy Evolution**: Feeds the Evaluator's mutations back into the generator parameters side-by-side to continuously breed higher-performing variants.
 * **Verifiable Agent Feed**: Logs execution histories directly to a public ledger, satisfying the strict hackathon live-trading verification guidelines.
 
-### 3. Under the Hood & Technical Design
+### 3. Architecture & Technical Design
 The platform uses a modular, deployment-ready stack:
 * **Next.js & TypeScript**: Core frontend workspace and API routes.
 * **TailwindCSS**: Premium dark-mode glassmorphic interface.
@@ -26,8 +32,8 @@ The platform uses a modular, deployment-ready stack:
 
 ### 4. Verifiable Execution & Results
 This submission includes **two reproducible Node.js terminal scripts** to prove execution integrity:
-1. **Interactive CLI Backtester (`scripts/backtest-cli.js`)**: Evaluates parameters directly in the terminal, printing an ASCII performance chart.
-2. **Bitget API Paper Trader (`scripts/bitget-paper-trader.js`)**: Fetches spot tickers (querying the public Bitget Spot Market API) and logs trades directly to `public/paper_trading_log.json`.
+1. **Interactive CLI Backtester (`scripts/backtest-cli.js`)**: Evaluates parameters directly in the terminal, printing an ASCII performance chart and the **AI strategy health verdict** (powered by `ai/strategy-evaluator.js`).
+2. **Bitget API Paper Trader (`scripts/bitget-paper-trader.js`)**: Fetches spot tickers (querying the public Bitget Spot Market API) and logs trades directly to `public/paper_trading_log.json` containing the AI Reason Engine output.
 
 ---
 

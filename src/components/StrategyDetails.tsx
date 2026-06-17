@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { StrategyOutput } from '@/lib/aiStrategyEngine';
 import { BacktestResults } from '@/lib/backtestEngine';
+import { evaluateStrategy } from '@/lib/strategyEvaluator';
 
 interface StrategyDetailsProps {
   strategy: StrategyOutput;
@@ -167,6 +168,62 @@ export default function StrategyDetails({ strategy, backtest, onEvolveTriggered,
           </span>
         </div>
       </div>
+
+      {/* 2.5 AI Strategy Health Evaluator Verdict */}
+      {(() => {
+        const evalResult = evaluateStrategy({
+          winRate: backtest.winRate,
+          totalReturn: backtest.totalReturn,
+          maxDrawdown: -backtest.maxDrawdown,
+          profitFactor: backtest.profitFactor
+        });
+
+        return (
+          <div className="rounded-2xl border border-slate-800/80 bg-[#090d1f]/45 backdrop-blur-md p-6 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3.5 rounded-xl bg-cyan-950/40 text-cyan-400 border border-cyan-800/30 shrink-0">
+                  <Cpu className="animate-pulse text-cyan-400" size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500 font-mono">Chronos Quant Synthesis</span>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-extrabold border uppercase tracking-wider ${
+                      evalResult.score >= 80 
+                        ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30' 
+                        : evalResult.score >= 60 
+                          ? 'bg-cyan-950/40 text-cyan-400 border-cyan-900/30' 
+                          : 'bg-rose-950/40 text-rose-400 border-rose-900/30'
+                    }`}>
+                      {evalResult.verdict}
+                    </span>
+                  </div>
+                  <h2 className="text-sm font-bold text-slate-200 mt-1.5">
+                    AI Optimization Verdict: <span className="text-cyan-400 font-medium">{evalResult.recommendation}</span>
+                  </h2>
+                  <p className="text-slate-400 text-xs mt-1.5 leading-relaxed max-w-3xl">
+                    The AI Quant Evaluator analyses Sharpe ratio metrics, return frequencies, and maximum drawdowns over historical runs to propose alterations for the strategy evolution pipeline.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="shrink-0 flex items-center gap-3">
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block font-mono">Quant Score</span>
+                  <span className="text-3xl font-black text-white font-mono">{evalResult.score}<span className="text-xs text-slate-500 font-bold">/100</span></span>
+                </div>
+                <div className="w-12 h-12 rounded-full border border-slate-800 flex items-center justify-center relative bg-slate-950">
+                  <div className={`absolute inset-0 rounded-full border animate-pulse ${
+                    evalResult.score >= 80 ? 'border-emerald-500' : evalResult.score >= 60 ? 'border-cyan-500' : 'border-rose-500'
+                  }`} style={{ clipPath: `polygon(0 0, 100% 0, 100% ${evalResult.score}%, 0 ${evalResult.score}%)` }} />
+                  <Cpu size={18} className="text-slate-500" />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* 3. Parameter and Risk Intelligence Column */}

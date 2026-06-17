@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { evaluateStrategy } = require("../ai/strategy-evaluator");
 
 // Read command line arguments
 const args = process.argv.slice(2);
@@ -281,6 +282,20 @@ console.log(`Total Return:     ${totalReturn.toFixed(2)}%`);
 console.log(`Win Rate:         ${winRate.toFixed(1)}% (${winTrades.length}/${sellTrades.length} trades)`);
 console.log(`Profit Factor:    ${profitFactor.toFixed(2)}`);
 console.log(`Max Drawdown:     -${maxDrawdown.toFixed(2)}%`);
+console.log('--------------------------------------------------');
+
+// AI Evaluation Loop
+const evaluation = evaluateStrategy({
+  winRate,
+  totalReturn,
+  maxDrawdown: -maxDrawdown,
+  profitFactor
+});
+
+console.log('\x1b[35m%s\x1b[0m', '  [CHRONOS AI QUANT VERDICT]');
+console.log(` Score Scorecard: ${evaluation.score}/100`);
+console.log(` Verdict Rating:  \x1b[36m${evaluation.verdict}\x1b[0m`);
+console.log(` AI Recommendation: ${evaluation.recommendation}`);
 console.log('--------------------------------------------------');
 
 // Print simple terminal ASCII chart of equity curve (15 rows, 40 columns)
