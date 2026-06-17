@@ -1,4 +1,5 @@
 import { Candle, generateHistoricalData } from './historicalData';
+import { generateTradeReason, TradeIndicators } from './aiReasonEngine';
 
 export interface BacktestParams {
   market: string;
@@ -25,6 +26,9 @@ export interface Trade {
   profit?: number;
   profitPercent?: number;
   balanceAfter: number;
+  aiReason?: string[];
+  confidence?: number;
+  riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export interface BacktestResults {
@@ -138,6 +142,23 @@ export function runBacktest(params: BacktestParams): BacktestResults {
       maxDrawdown = currentDrawdown;
     }
 
+    const getIndicatorsAndReason = (action: 'BUY' | 'SELL') => {
+      const rsiVal = getRSI(candles, i, rsiPeriod) || 50;
+      const fastSma = getSMA(candles, i, fastPeriod) || price;
+      const slowSma = getSMA(candles, i, slowPeriod) || price;
+      const volSpike = i > 2 ? candles[i].volume > 1.2 * (candles[i-1].volume + candles[i-2].volume)/2 : false;
+      
+      const ind: TradeIndicators = {
+        rsi: rsiVal,
+        smaShort: fastSma,
+        smaLong: slowSma,
+        volumeSpike: volSpike,
+        volatility: params.riskLevel === 'Low' ? 0.015 : params.riskLevel === 'Medium' ? 0.025 : 0.05
+      };
+      
+      return generateTradeReason(params.market, action, price, ind);
+    };
+
     // Evaluate current open position for stop loss / take profit
     if (position !== null) {
       const priceChangePct = ((price - position.entryPrice) / position.entryPrice) * 100;
@@ -158,6 +179,7 @@ export function runBacktest(params: BacktestParams): BacktestResults {
         const profit = (exitPrice - position.entryPrice) * position.amount;
         balance += profit;
         
+        const rRisk = params.riskLevel === 'Low' ? 'LOW' : params.riskLevel === 'Medium' ? 'MEDIUM' : 'HIGH';
         trades.push({
           id: Math.random().toString(36).substring(2, 9),
           type: 'SELL',
@@ -165,7 +187,12 @@ export function runBacktest(params: BacktestParams): BacktestResults {
           time: candle.time,
           profit,
           profitPercent: priceChangePct,
-          balanceAfter: balance
+          balanceAfter: balance,
+          aiReason: exitReason === 'Stop Loss' 
+            ? [`Stop loss threshold of -${stopLoss}% breached. Mitigating drawdown.`]
+            : [`Take profit target of +${takeProfit}% achieved. Locking in yields.`],
+          confidence: 95,
+          riskLevel: rRisk
         });
         position = null;
       }
@@ -188,18 +215,23 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               entryTime: candle.time,
               amount: balance / price
             };
+            const analysis = getIndicatorsAndReason('BUY');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'BUY',
               price,
               time: candle.time,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
           }
           // SELL Signal: Fast SMA crosses below Slow SMA
           else if (prevFastSma >= prevSlowSma && currFastSma < currSlowSma && position !== null) {
             const profit = (price - position.entryPrice) * position.amount;
             balance += profit;
+            const analysis = getIndicatorsAndReason('SELL');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'SELL',
@@ -207,7 +239,10 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               time: candle.time,
               profit,
               profitPercent: ((price - position.entryPrice) / position.entryPrice) * 100,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
             position = null;
           }
@@ -227,18 +262,23 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               entryTime: candle.time,
               amount: balance / price
             };
+            const analysis = getIndicatorsAndReason('BUY');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'BUY',
               price,
               time: candle.time,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
           }
           // SELL Signal: RSI enters overbought area (> 70)
           else if (prevRsi <= rsiOverbought && currRsi > rsiOverbought && position !== null) {
             const profit = (price - position.entryPrice) * position.amount;
             balance += profit;
+            const analysis = getIndicatorsAndReason('SELL');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'SELL',
@@ -246,7 +286,10 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               time: candle.time,
               profit,
               profitPercent: ((price - position.entryPrice) / position.entryPrice) * 100,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
             position = null;
           }
@@ -266,18 +309,23 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               entryTime: candle.time,
               amount: balance / price
             };
+            const analysis = getIndicatorsAndReason('BUY');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'BUY',
               price,
               time: candle.time,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
           }
           // SELL Signal: Close price falls below the middle SMA (basis)
           else if (candles[i - 1].close >= prevBB.basis && price < currBB.basis && position !== null) {
             const profit = (price - position.entryPrice) * position.amount;
             balance += profit;
+            const analysis = getIndicatorsAndReason('SELL');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'SELL',
@@ -285,7 +333,10 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               time: candle.time,
               profit,
               profitPercent: ((price - position.entryPrice) / position.entryPrice) * 100,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
             position = null;
           }
@@ -306,18 +357,23 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               entryTime: candle.time,
               amount: balance / price
             };
+            const analysis = getIndicatorsAndReason('BUY');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'BUY',
               price,
               time: candle.time,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
           }
           // Sell signal: RSI > 65 OR Fast SMA < Slow SMA
           else if ((rsi > 65 || fastSma < slowSma) && position !== null) {
             const profit = (price - position.entryPrice) * position.amount;
             balance += profit;
+            const analysis = getIndicatorsAndReason('SELL');
             trades.push({
               id: Math.random().toString(36).substring(2, 9),
               type: 'SELL',
@@ -325,7 +381,10 @@ export function runBacktest(params: BacktestParams): BacktestResults {
               time: candle.time,
               profit,
               profitPercent: ((price - position.entryPrice) / position.entryPrice) * 100,
-              balanceAfter: balance
+              balanceAfter: balance,
+              aiReason: analysis.reason,
+              confidence: analysis.confidence,
+              riskLevel: analysis.risk
             });
             position = null;
           }
@@ -352,6 +411,8 @@ export function runBacktest(params: BacktestParams): BacktestResults {
     const finalPrice = candles[candles.length - 1].close;
     const profit = (finalPrice - position.entryPrice) * position.amount;
     balance += profit;
+    
+    const rRisk = params.riskLevel === 'Low' ? 'LOW' : params.riskLevel === 'Medium' ? 'MEDIUM' : 'HIGH';
     trades.push({
       id: Math.random().toString(36).substring(2, 9),
       type: 'SELL',
@@ -359,7 +420,10 @@ export function runBacktest(params: BacktestParams): BacktestResults {
       time: candles[candles.length - 1].time,
       profit,
       profitPercent: ((finalPrice - position.entryPrice) / position.entryPrice) * 100,
-      balanceAfter: balance
+      balanceAfter: balance,
+      aiReason: ["End of simulated session cleanup. Position liquidated."],
+      confidence: 95,
+      riskLevel: rRisk
     });
     
     // Update last entry in equity curve

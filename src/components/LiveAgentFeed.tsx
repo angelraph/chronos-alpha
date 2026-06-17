@@ -20,6 +20,9 @@ interface PaperTrade {
   quantity: number;
   balanceChange: number;
   currentBalance: number;
+  aiReason?: string[];
+  confidence?: number;
+  riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
 export default function LiveAgentFeed() {
@@ -148,51 +151,139 @@ export default function LiveAgentFeed() {
 
       {/* 3. Terminal Log & Execution Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Monospace Terminal Logs */}
-        <div className="lg:col-span-8 flex flex-col rounded-xl border border-slate-800/80 bg-[#090d1f]/30 p-5 shadow-xl overflow-hidden min-h-[380px]">
-          <div className="flex items-center gap-2 pb-3.5 border-b border-slate-800/40 mb-4">
-            <Terminal size={15} className="text-cyan-400" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Agent Execution Shell Log
-            </h3>
-          </div>
-
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="relative w-8 h-8">
-                <div className="absolute inset-0 rounded-full border-4 border-cyan-950" />
-                <div className="absolute inset-0 rounded-full border-4 border-t-cyan-400 animate-spin" />
+        {/* Monospace Terminal Logs & Explainable Cards */}
+        <div className="lg:col-span-8 flex flex-col gap-6 min-h-[380px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Left Col: Terminal Shell */}
+            <div className="flex flex-col rounded-xl border border-slate-800/80 bg-[#090d1f]/30 p-5 shadow-xl overflow-hidden h-[380px]">
+              <div className="flex items-center gap-2 pb-3.5 border-b border-slate-800/40 mb-3">
+                <Terminal size={15} className="text-cyan-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Agent Execution Shell
+                </h3>
               </div>
-            </div>
-          ) : (
-            <div className="flex-1 bg-black/55 font-mono text-[10px] sm:text-xs leading-relaxed p-4 rounded-lg overflow-y-auto max-h-[320px] text-slate-400 space-y-2 select-all">
-              <div className="text-slate-600">[SYS] Establishing Bitget API secure handshake...</div>
-              <div className="text-emerald-500">[SYS] Connected. Listening on tickers: BTCUSDT, ETHUSDT, SOLUSDT</div>
-              {trades.slice().reverse().map((t, index) => {
-                const isBuy = t.direction === 'BUY';
-                const color = isBuy ? 'text-emerald-400' : 'text-rose-400';
-                const dateStr = new Date(t.timestamp).toLocaleTimeString();
-                
-                return (
-                  <div key={index}>
-                    <span className="text-slate-600">[{new Date(t.timestamp).toLocaleDateString()} {dateStr}]</span>{' '}
-                    <span className="text-cyan-500">[ORDER]</span>{' '}
-                    <span>{t.pair}</span>{' '}
-                    <span className={`font-bold ${color}`}>{t.direction}</span>{' '}
-                    <span className="text-slate-300">{t.quantity}</span> @{' '}
-                    <span className="text-slate-200">${t.price.toLocaleString()}</span>{' '}
-                    <span className="text-slate-500">| BalChange:</span>{' '}
-                    <span className={isBuy ? 'text-rose-400' : 'text-emerald-400'}>
-                      {t.balanceChange >= 0 ? '+' : ''}{t.balanceChange.toLocaleString()}
-                    </span>{' '}
-                    <span className="text-slate-500">| Portfolio:</span>{' '}
-                    <span className="text-cyan-400">${t.currentBalance.toLocaleString()}</span>
+
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="relative w-6.5 h-6.5">
+                    <div className="absolute inset-0 rounded-full border-4 border-cyan-950" />
+                    <div className="absolute inset-0 rounded-full border-4 border-t-cyan-400 animate-spin" />
                   </div>
-                );
-              })}
-              <div className="text-slate-500 animate-pulse">[SYS] Awaiting next market bar ticker shift... |</div>
+                </div>
+              ) : (
+                <div className="flex-1 bg-black/55 font-mono text-[9px] sm:text-[10px] leading-relaxed p-3.5 rounded-lg overflow-y-auto max-h-[300px] text-slate-400 space-y-1.5 select-all">
+                  <div className="text-slate-600">[SYS] Establishing Bitget API secure handshake...</div>
+                  <div className="text-emerald-500">[SYS] Connected. Listening on tickers: BTCUSDT, ETHUSDT, SOLUSDT</div>
+                  {trades.slice().reverse().map((t, index) => {
+                    const isBuy = t.direction === 'BUY';
+                    const color = isBuy ? 'text-emerald-400' : 'text-rose-400';
+                    const dateStr = new Date(t.timestamp).toLocaleTimeString();
+                    
+                    return (
+                      <div key={index}>
+                        <span className="text-slate-600">[{dateStr}]</span>{' '}
+                        <span className="text-cyan-500">[ORD]</span>{' '}
+                        <span>{t.pair.split('/')[0]}</span>{' '}
+                        <span className={`font-bold ${color}`}>{t.direction}</span>{' '}
+                        <span className="text-slate-200">${t.price.toLocaleString()}</span>{' '}
+                        <span className="text-slate-500">|</span>{' '}
+                        <span className={isBuy ? 'text-rose-400' : 'text-emerald-400'}>
+                          {t.balanceChange >= 0 ? '+' : ''}{Math.round(t.balanceChange)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="text-slate-500 animate-pulse">[SYS] Awaiting next market bar ticker shift... |</div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Right Col: Explainable AI Decision Cards */}
+            <div className="flex flex-col rounded-xl border border-slate-800/80 bg-[#090d1f]/30 p-5 shadow-xl overflow-hidden h-[380px]">
+              <div className="flex items-center gap-2 pb-3.5 border-b border-slate-800/40 mb-3">
+                <Cpu size={15} className="text-emerald-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  AI Explainable Trades (Latest)
+                </h3>
+              </div>
+
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="relative w-6.5 h-6.5">
+                    <div className="absolute inset-0 rounded-full border-4 border-cyan-950" />
+                    <div className="absolute inset-0 rounded-full border-4 border-t-cyan-400 animate-spin" />
+                  </div>
+                </div>
+              ) : trades.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-xs text-slate-500">
+                  No decisions logged yet.
+                </div>
+              ) : (
+                <div className="flex-1 space-y-3 overflow-y-auto max-h-[300px] pr-1">
+                  {trades.slice(0, 3).map((t, idx) => {
+                    const isBuy = t.direction === 'BUY';
+                    const riskColors = {
+                      LOW: 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30',
+                      MEDIUM: 'bg-cyan-950/40 text-cyan-400 border-cyan-900/30',
+                      HIGH: 'bg-rose-950/40 text-rose-400 border-rose-900/30'
+                    };
+                    const riskLabel = t.riskLevel || 'MEDIUM';
+                    const score = t.confidence || 75;
+
+                    return (
+                      <div key={idx} className="p-3 rounded-lg border border-slate-800 bg-slate-950/20 text-[11px] space-y-2 relative overflow-hidden">
+                        {/* Title Row */}
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-200">{t.pair}</span>
+                            <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] font-extrabold uppercase ${
+                              isBuy ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'
+                            }`}>
+                              {t.direction}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-slate-500">
+                            {new Date(t.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+
+                        {/* Confidence Score Bar */}
+                        <div>
+                          <div className="flex justify-between text-[9px] mb-0.5 font-mono">
+                            <span className="text-slate-500">AI Confidence:</span>
+                            <span className="font-bold text-cyan-400">{score}%</span>
+                          </div>
+                          <div className="w-full bg-slate-900 rounded-full h-1 overflow-hidden">
+                            <div className="bg-cyan-500 h-1 rounded-full" style={{ width: `${score}%` }} />
+                          </div>
+                        </div>
+
+                        {/* Explainable Reasons */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Reasoning triggers:</span>
+                          <ul className="space-y-0.5 text-slate-300 list-disc list-inside leading-tight pl-0.5">
+                            {(t.aiReason || ["Technical indicators crossover confirmation."]).map((r, rIdx) => (
+                              <li key={rIdx} className="truncate">{r}</li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Risk level badge */}
+                        <div className="flex justify-between items-center pt-1 border-t border-slate-900/80">
+                          <span className="text-[9px] text-slate-500 font-mono">Price: ${t.price.toLocaleString()}</span>
+                          <span className={`px-2 py-0.5 rounded font-extrabold text-[8px] border uppercase ${riskColors[riskLabel]}`}>
+                            {riskLabel} RISK
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+          </div>
         </div>
 
         {/* Explainer Sidebar */}

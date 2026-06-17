@@ -12,7 +12,8 @@ import {
   FileCode,
   Sliders,
   Sparkles,
-  Percent
+  Percent,
+  Cpu
 } from 'lucide-react';
 import { StrategyOutput } from '@/lib/aiStrategyEngine';
 import { BacktestResults } from '@/lib/backtestEngine';
@@ -303,6 +304,85 @@ export default function StrategyDetails({ strategy, backtest, onEvolveTriggered,
           </div>
         </div>
       </div>
+
+      {/* 5. Simulated Trade Executions Ledger */}
+      {backtest.trades && backtest.trades.length > 0 && (
+        <div className="rounded-xl border border-slate-800/80 bg-[#090d1f]/30 p-5 shadow-xl">
+          <div className="flex items-center gap-2 pb-3.5 border-b border-slate-800/40 mb-4">
+            <Cpu size={15} className="text-cyan-400" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Explainable AI Backtest Executions (Simulated Ledger)
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[300px] overflow-y-auto pr-1">
+            {backtest.trades.slice().reverse().map((t, idx) => {
+              const isBuy = t.type === 'BUY';
+              const riskLabel = t.riskLevel || 'MEDIUM';
+              const score = t.confidence || 75;
+              const riskColors = {
+                LOW: 'bg-emerald-950/40 text-emerald-400 border-emerald-900/30',
+                MEDIUM: 'bg-cyan-950/40 text-cyan-400 border-cyan-900/30',
+                HIGH: 'bg-rose-950/40 text-rose-400 border-rose-900/30'
+              };
+
+              return (
+                <div key={t.id || idx} className="p-3.5 rounded-xl border border-slate-800/60 bg-slate-950/20 text-xs space-y-2 relative overflow-hidden">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-slate-200">Execution #{backtest.trades.length - idx}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase ${
+                        isBuy ? 'bg-emerald-950 text-emerald-400' : 'bg-rose-950 text-rose-400'
+                      }`}>
+                        {t.type}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">{t.time}</span>
+                  </div>
+
+                  {/* Profit overlay if SELL */}
+                  {!isBuy && t.profit !== undefined && (
+                    <div className="flex justify-between text-[11px] font-mono border-b border-slate-900/50 pb-1.5 mb-1.5">
+                      <span className="text-slate-500 font-sans">Execution Yield:</span>
+                      <span className={`font-bold ${t.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {t.profit >= 0 ? '+' : ''}{formatCurrency(t.profit)} ({t.profitPercent?.toFixed(2)}%)
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Confidence Bar */}
+                  <div>
+                    <div className="flex justify-between text-[9px] mb-0.5 font-mono">
+                      <span className="text-slate-500">AI Score:</span>
+                      <span className="font-bold text-cyan-400">{score}%</span>
+                    </div>
+                    <div className="w-full bg-slate-900 rounded-full h-1 overflow-hidden">
+                      <div className="bg-cyan-500 h-1 rounded-full" style={{ width: `${score}%` }} />
+                    </div>
+                  </div>
+
+                  {/* Reasons */}
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Reasoning Triggers:</span>
+                    <ul className="space-y-0.5 text-slate-300 list-disc list-inside leading-tight pl-0.5 text-[10px]">
+                      {(t.aiReason || ["Indicator signal matching strategy criteria."]).map((r, rIdx) => (
+                        <li key={rIdx} className="truncate">{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-900/80">
+                    <span className="text-[10px] text-slate-400 font-mono">Price: ${t.price.toLocaleString()}</span>
+                    <span className={`px-1.5 py-0.5 rounded font-extrabold text-[8px] border uppercase ${riskColors[riskLabel]}`}>
+                      {riskLabel} RISK
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
