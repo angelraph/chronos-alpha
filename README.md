@@ -1,6 +1,9 @@
 # Chronos Alpha: Self-Improving Autonomous AI Crypto Strategy Lab
 
-Chronos Alpha is a premium, self-improving AI-powered quant strategy laboratory designed for crypto traders. It automates the entire quant research loop: Strategy Compilation → High-Fidelity Simulation → AI Performance Evaluation → Genetic Mutation (Strategy Evolution) → Live Paper Trading Execution.
+> **Chronos Alpha is an autonomous AI quant research engine that continuously generates, evaluates, and optimizes trading strategies using a closed-loop reinforcement system. It simulates market behavior, explains every trade decision, and automatically mutates underperforming strategies until performance thresholds are achieved.**
+
+### 🧠 The Core Thesis: "The Junior Quant Analyst That Never Sleeps"
+Instead of a static trading bot running fixed code, Chronos Alpha behaves like an autonomous quantitative analyst. It writes strategy logic, backtests it against live historical volatility, inspects individual trade justifications, identifies weak returns, and mutates its own indicator thresholds until it satisfies deployment criteria.
 
 ---
 
@@ -8,6 +11,7 @@ Chronos Alpha is a premium, self-improving AI-powered quant strategy laboratory 
 
 ### 1. Problem Statement
 Algorithmic trading has long been gated behind advanced coding frameworks and math modeling, shutting out everyday crypto traders. Furthermore, existing AI trading agents are static—they run fixed strategies that cannot learn from live market performance or adapt to changing volatility regimes. Judges are looking for **explainable reasoning** and **verifiable executions** rather than black-box bots.
+
 
 ### 2. Solution: Self-Improving Quant Loop
 Chronos Alpha closes the loop by connecting trade execution, backtesting, and performance evaluations:

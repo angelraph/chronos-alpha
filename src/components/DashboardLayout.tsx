@@ -144,14 +144,9 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
 
             {activeLoopStrat && (
               <div className="mt-6 pt-4 border-t border-slate-800/60">
-                <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 mb-2">
-                  <span className="flex items-center gap-1.5">
-                    <Cpu size={12} className="text-emerald-400 animate-pulse" />
-                    <span>Autonomous Loop</span>
-                  </span>
-                  <span className="text-[8px] bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 px-1 py-0.5 rounded font-bold uppercase tracking-widest">
-                    Active
-                  </span>
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest px-2 mb-2 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span>Strategy Engine: ACTIVE</span>
                 </div>
                 <div className="rounded-xl bg-emerald-950/10 border border-emerald-900/30 p-3 space-y-1.5">
                   <div className="text-[11px] font-bold text-slate-200 truncate">{activeLoopStrat.strategy.name}</div>
