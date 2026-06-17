@@ -1,0 +1,110 @@
+[
+  {
+    "timestamp": "2026-06-12T16:05:21.844Z",
+    "pair": "BTC/USDT",
+    "direction": "BUY",
+    "price": 66478.85,
+    "quantity": 0.0451,
+    "balanceChange": -3000,
+    "currentBalance": 7000
+  },
+  {
+    "timestamp": "2026-06-13T02:05:21.844Z",
+    "pair": "SOL/USDT",
+    "direction": "SELL",
+    "price": 148.96,
+    "quantity": 20.1396,
+    "balanceChange": 2998.48,
+    "currentBalance": 9998.48
+  },
+  {
+    "timestamp": "2026-06-13T12:05:21.844Z",
+    "pair": "ETH/USDT",
+    "direction": "BUY",
+    "price": 3501.48,
+    "quantity": 0.8568,
+    "balanceChange": -3000,
+    "currentBalance": 6998.48
+  },
+  {
+    "timestamp": "2026-06-13T22:05:21.844Z",
+    "pair": "BTC/USDT",
+    "direction": "SELL",
+    "price": 67753.89,
+    "quantity": 0.0443,
+    "balanceChange": 3071.26,
+    "currentBalance": 10069.74
+  },
+  {
+    "timestamp": "2026-06-14T08:05:21.844Z",
+    "pair": "SOL/USDT",
+    "direction": "BUY",
+    "price": 155.01,
+    "quantity": 19.3536,
+    "balanceChange": -3000,
+    "currentBalance": 7069.74
+  },
+  {
+    "timestamp": "2026-06-14T18:05:21.844Z",
+    "pair": "ETH/USDT",
+    "direction": "SELL",
+    "price": 3586.51,
+    "quantity": 0.8365,
+    "balanceChange": 3028.02,
+    "currentBalance": 10097.76
+  },
+  {
+    "timestamp": "2026-06-15T04:05:21.844Z",
+    "pair": "BTC/USDT",
+    "direction": "BUY",
+    "price": 66824.47,
+    "quantity": 0.0449,
+    "balanceChange": -3000,
+    "currentBalance": 7097.76
+  },
+  {
+    "timestamp": "2026-06-15T14:05:21.844Z",
+    "pair": "SOL/USDT",
+    "direction": "SELL",
+    "price": 149.08,
+    "quantity": 20.1234,
+    "balanceChange": 3030.73,
+    "currentBalance": 10128.49
+  },
+  {
+    "timestamp": "2026-06-16T00:05:21.844Z",
+    "pair": "ETH/USDT",
+    "direction": "BUY",
+    "price": 3486.42,
+    "quantity": 0.8605,
+    "balanceChange": -3000,
+    "currentBalance": 7128.49
+  },
+  {
+    "timestamp": "2026-06-16T10:05:21.844Z",
+    "pair": "BTC/USDT",
+    "direction": "SELL",
+    "price": 67389.67,
+    "quantity": 0.0445,
+    "balanceChange": 3071.19,
+    "currentBalance": 10199.68
+  },
+  {
+    "timestamp": "2026-06-16T20:05:21.844Z",
+    "pair": "SOL/USDT",
+    "direction": "BUY",
+    "price": 154.76,
+    "quantity": 19.3849,
+    "balanceChange": -3000,
+    "currentBalance": 7199.68
+  },
+  {
+    "timestamp": "2026-06-17T06:05:21.844Z",
+    "pair": "ETH/USDT",
+    "direction": "SELL",
+    "price": 3599.58,
+    "quantity": 0.8334,
+    "balanceChange": 3006.31,
+    "currentBalance": 10205.99
+  }
+]

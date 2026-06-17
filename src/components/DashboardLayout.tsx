@@ -29,6 +29,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
   const menuItems = [
     { id: 'generator', label: 'Strategy Lab', icon: PlusCircle },
     { id: 'evolution', label: 'AI Strategy Evolution', icon: GitCompare },
+    { id: 'live-feed', label: 'Live Agent Feed', icon: Activity },
     { id: 'logs', label: 'Activity Logs', icon: History },
   ];
 

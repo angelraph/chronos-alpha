@@ -9,6 +9,7 @@ import BacktestChart from '@/components/BacktestChart';
 import StrategyDetails from '@/components/StrategyDetails';
 import StrategyEvolution from '@/components/StrategyEvolution';
 import ActivityLogs from '@/components/ActivityLogs';
+import LiveAgentFeed from '@/components/LiveAgentFeed';
 import { proposeEvolution, StrategyOutput } from '@/lib/aiStrategyEngine';
 import { runBacktest, BacktestResults } from '@/lib/backtestEngine';
 import { Sparkles, Terminal } from 'lucide-react';
@@ -183,6 +184,10 @@ export default function DashboardPage() {
             </div>
           )}
         </>
+      )}
+
+      {activeTab === 'live-feed' && (
+        <LiveAgentFeed />
       )}
 
       {activeTab === 'logs' && (
