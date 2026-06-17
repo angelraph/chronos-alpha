@@ -25,6 +25,18 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, activeTab, setActiveTab }: DashboardLayoutProps) {
   const { user, signOut, isDemoMode } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeLoopStrat, setActiveLoopStrat] = useState<any>(null);
+
+  React.useEffect(() => {
+    fetch('/active_strategy.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.strategy) {
+          setActiveLoopStrat(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const menuItems = [
     { id: 'generator', label: 'Strategy Lab', icon: PlusCircle },
@@ -129,6 +141,28 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
                 );
               })}
             </nav>
+
+            {activeLoopStrat && (
+              <div className="mt-6 pt-4 border-t border-slate-800/60">
+                <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 mb-2">
+                  <span className="flex items-center gap-1.5">
+                    <Cpu size={12} className="text-emerald-400 animate-pulse" />
+                    <span>Autonomous Loop</span>
+                  </span>
+                  <span className="text-[8px] bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 px-1 py-0.5 rounded font-bold uppercase tracking-widest">
+                    Active
+                  </span>
+                </div>
+                <div className="rounded-xl bg-emerald-950/10 border border-emerald-900/30 p-3 space-y-1.5">
+                  <div className="text-[11px] font-bold text-slate-200 truncate">{activeLoopStrat.strategy.name}</div>
+                  <div className="flex justify-between text-[9px] font-mono text-slate-400">
+                    <span>Score: <b className="text-cyan-400">{activeLoopStrat.evaluation.score}/100</b></span>
+                    <span>Return: <b className={activeLoopStrat.metrics.totalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{activeLoopStrat.metrics.totalReturn >= 0 ? '+' : ''}{activeLoopStrat.metrics.totalReturn.toFixed(1)}%</b></span>
+                  </div>
+                  <div className="text-[8px] text-slate-400/80 leading-normal line-clamp-2 italic">{activeLoopStrat.evaluation.recommendation}</div>
+                </div>
+              </div>
+            )}
 
             <div className="mt-8 pt-4 border-t border-slate-800/60">
               <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest px-2 mb-2">

@@ -81,3 +81,15 @@ Connect to the Bitget API spot tickers and append verified executions to the pub
 node scripts/bitget-paper-trader.js
 ```
 This script updates the `public/paper_trading_log.json` log which is visualised in the web dashboard under the **Live Agent Feed** tab.
+
+### 3. Run Autonomous Optimization Loop (Top-Tier Thesis Feature)
+Initiate a closed-loop parameter mutation and self-improvement cycle:
+```bash
+node ai/autonomous-loop.js --market BTC --threshold 80
+```
+This script runs the complete loop:
+* Compiles strategy parameters via `ai/strategy-generator.js`.
+* Performs a 180-day volatility backtest simulation.
+* Scores performance with the AI Evaluator (`ai/strategy-evaluator.js`).
+* If score fails target threshold, automatically mutates indicator parameters to improve yields, re-runs backtest, and updates the active manifest at `public/active_strategy.json` which dynamically updates the frontend dashboard sidebar status!
+
