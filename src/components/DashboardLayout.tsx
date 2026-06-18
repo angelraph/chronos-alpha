@@ -145,10 +145,10 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }: D
             {activeLoopStrat && (
               <div className="mt-6 pt-4 border-t border-slate-800/60">
                 <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-widest px-2 mb-2 font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <span>Strategy Engine: ACTIVE</span>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${activeLoopStrat.status === 'DEPLOYED' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                  <span>Strategy Engine: {activeLoopStrat.status === 'DEPLOYED' ? 'ACTIVE' : 'REJECTED (CANDIDATE)'}</span>
                 </div>
-                <div className="rounded-xl bg-emerald-950/10 border border-emerald-900/30 p-3 space-y-1.5">
+                <div className={`rounded-xl p-3 space-y-1.5 ${activeLoopStrat.status === 'DEPLOYED' ? 'bg-emerald-950/10 border border-emerald-900/30' : 'bg-rose-950/10 border border-rose-900/30'}`}>
                   <div className="text-[11px] font-bold text-slate-200 truncate">{activeLoopStrat.strategy.name}</div>
                   <div className="flex justify-between text-[9px] font-mono text-slate-400">
                     <span>Score: <b className="text-cyan-400">{activeLoopStrat.evaluation.score}/100</b></span>

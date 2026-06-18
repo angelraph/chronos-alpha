@@ -12,7 +12,7 @@ import ActivityLogs from '@/components/ActivityLogs';
 import LiveAgentFeed from '@/components/LiveAgentFeed';
 import { proposeEvolution, StrategyOutput } from '@/lib/aiStrategyEngine';
 import { runBacktest, BacktestResults } from '@/lib/backtestEngine';
-import { Sparkles, Terminal } from 'lucide-react';
+import { Sparkles, Terminal, History } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -28,6 +28,29 @@ export default function DashboardPage() {
   const [evolvedStrategy, setEvolvedStrategy] = useState<StrategyOutput | null>(null);
   const [evolvedBacktest, setEvolvedBacktest] = useState<BacktestResults | null>(null);
   const [isEvolving, setIsEvolving] = useState(false);
+
+  const [optimizationHistory, setOptimizationHistory] = useState<any[]>([]);
+
+  const fetchOptimizationHistory = () => {
+    fetch('/optimization_history.json')
+      .then(res => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          const sorted = [...data].reverse().slice(0, 5);
+          setOptimizationHistory(sorted);
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchOptimizationHistory();
+    const interval = setInterval(fetchOptimizationHistory, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Authenticate router check
   useEffect(() => {
@@ -162,6 +185,55 @@ export default function DashboardPage() {
               isEvolving={isEvolving}
             />
           )}
+
+          {/* Optimization History Panel */}
+          <div className="rounded-xl border border-slate-800/80 bg-[#090d1f]/30 p-5 shadow-xl">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 pb-3 border-b border-slate-800/40 mb-4 flex items-center gap-2">
+              <History size={14} className="text-cyan-400" />
+              <span>Autonomous Optimization History (Last 5 Attempts)</span>
+            </h3>
+            
+            {optimizationHistory.length === 0 ? (
+              <div className="text-slate-500 text-xs py-6 text-center font-mono">
+                No optimization history logged. Run the autonomous loop engine in the background to generate attempts:
+                <br />
+                <code className="text-cyan-500 block mt-2">node ai/autonomous-loop.js --market BTC --style Trend --threshold 70</code>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {optimizationHistory.map((attempt, index) => {
+                  const scoreColor = attempt.score >= 80 
+                    ? 'text-emerald-400 border-emerald-950 bg-emerald-950/15' 
+                    : attempt.score >= 60 
+                      ? 'text-amber-400 border-amber-950 bg-amber-950/15' 
+                      : 'text-rose-400 border-rose-950 bg-rose-950/15';
+                  
+                  return (
+                    <div key={index} className="p-4 rounded-xl border border-slate-800/40 bg-slate-950/20 hover:bg-slate-900/10 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-bold text-slate-200 text-xs tracking-wider">{attempt.name}</span>
+                          <span className="text-[9px] text-slate-500 font-mono">
+                            {new Date(attempt.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed">
+                          <span className="text-slate-500">Parameters:</span> {JSON.stringify(attempt.parameters)}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Verdict: <span className="font-medium text-slate-300">{attempt.verdict}</span>
+                        </div>
+                      </div>
+                      
+                      <div className={`px-3 py-1.5 rounded-lg border font-mono text-xs font-bold text-center w-20 shrink-0 ${scoreColor}`}>
+                        {attempt.score}/100
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

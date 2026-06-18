@@ -144,6 +144,40 @@ function runSimulatedBacktest(market, style, risk, parameters) {
   };
 }
 
+function logAttempt(strategy, evaluation) {
+  const publicDir = path.join(__dirname, '..', 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+
+  const historyPath = path.join(publicDir, 'optimization_history.json');
+  let history = [];
+  
+  if (fs.existsSync(historyPath)) {
+    try {
+      history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+    } catch (e) {
+      console.error('Failed to parse optimization_history.json, resetting history.', e);
+    }
+  }
+  
+  if (!Array.isArray(history)) {
+    history = [];
+  }
+  
+  const attempt = {
+    name: strategy.name,
+    parameters: strategy.parameters,
+    score: evaluation.score,
+    verdict: evaluation.verdict,
+    timestamp: new Date().toISOString()
+  };
+  
+  history.push(attempt);
+  fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
+  console.log(`✔ Attempt logged in optimization history: "${strategy.name}" (Score: ${evaluation.score})`);
+}
+
 async function runAutonomousLoop() {
   console.log(`[1] Compiling Strategy Brain for ${params.market}...`);
   const initialData = generateStrategy({
@@ -175,6 +209,8 @@ async function runAutonomousLoop() {
   console.log(`    AI Quant Score: \x1b[36m${evaluation.score}/100\x1b[0m`);
   console.log(`    Verdict:        ${evaluation.verdict}`);
   console.log(`    Recommendation: ${evaluation.recommendation}`);
+
+  logAttempt(strategy, evaluation);
 
   if (evaluation.score >= params.threshold) {
     approveAndSave(strategy, metrics, evaluation);
@@ -229,25 +265,46 @@ async function runAutonomousLoop() {
       parameters: mutatedParams
     };
 
+    logAttempt(updatedStrategy, mutatedEvaluation);
+
+    let finalStrategy = strategy;
+    let finalMetrics = metrics;
+    let finalEvaluation = evaluation;
+
     if (mutatedEvaluation.score >= evaluation.score) {
       console.log(`\x1b[32m✔ Mutated strategy improved performance. Score increased from ${evaluation.score} to ${mutatedEvaluation.score}.\x1b[0m`);
-      approveAndSave(updatedStrategy, mutatedMetrics, mutatedEvaluation);
+      finalStrategy = updatedStrategy;
+      finalMetrics = mutatedMetrics;
+      finalEvaluation = mutatedEvaluation;
     } else {
       console.log(`\x1b[31m❌ Mutation did not improve score. Retaining parent config.\x1b[0m`);
-      approveAndSave(strategy, metrics, evaluation);
+    }
+
+    if (finalEvaluation.score >= params.threshold) {
+      approveAndSave(finalStrategy, finalMetrics, finalEvaluation, "DEPLOYED");
+    } else {
+      console.log('\x1b[33m%s\x1b[0m', `\n[!] Final score ${finalEvaluation.score} is still below threshold ${params.threshold}.`);
+      approveAndSave(finalStrategy, finalMetrics, finalEvaluation, "REJECTED");
     }
   }
 }
 
-function approveAndSave(strategy, metrics, evaluation) {
-  console.log('\x1b[32m%s\x1b[0m', `\n🚀 STRATEGY APPROVED! ACTIVATING PAPER TRADING FEED ENGINE.`);
+function approveAndSave(strategy, metrics, evaluation, status = "DEPLOYED") {
+  const isApproved = status === "DEPLOYED";
+  if (isApproved) {
+    console.log('\x1b[32m%s\x1b[0m', `\n🚀 STRATEGY APPROVED! ACTIVATING PAPER TRADING FEED ENGINE.`);
+  } else {
+    console.log('\x1b[31m%s\x1b[0m', `\n❌ STRATEGY REJECTED (Score below threshold). SAVING AS CANDIDATE.`);
+    console.log(`To continue searching, run the loop again with a lower threshold or different parameters:`);
+    console.log(`\x1b[36m    node ai/autonomous-loop.js --market ${params.market} --style ${params.style} --threshold <lower_value>\x1b[0m`);
+  }
   
   const activeStrategy = {
     strategy,
     metrics,
     evaluation,
     activatedAt: new Date().toISOString(),
-    status: "DEPLOYED"
+    status
   };
 
   const publicDir = path.join(__dirname, '..', 'public');
@@ -257,9 +314,11 @@ function approveAndSave(strategy, metrics, evaluation) {
 
   const manifestPath = path.join(publicDir, 'active_strategy.json');
   fs.writeFileSync(manifestPath, JSON.stringify(activeStrategy, null, 2));
-  console.log(`✔ Manifest active strategy saved: public/active_strategy.json`);
-  console.log(`\nTo run paper trade on this strategy:`);
-  console.log(`\x1b[36m    node scripts/bitget-paper-trader.js\x1b[0m`);
+  console.log(`✔ Manifest active strategy saved: public/active_strategy.json [Status: ${status}]`);
+  if (isApproved) {
+    console.log(`\nTo run paper trade on this strategy:`);
+    console.log(`\x1b[36m    node scripts/bitget-paper-trader.js\x1b[0m`);
+  }
   console.log('==================================================');
 }
 
